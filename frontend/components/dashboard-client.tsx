@@ -407,8 +407,7 @@ export default function DashboardClient() {
           </div>
           <div className="row">
             <button className="secondary" disabled={tickLoading || notifiersLoading} onClick={loadNotifiers} type="button">
-              {notifiersLoading && <span className="spinner" />}
-              {notifiersLoading ? "Refreshing..." : "Refresh"}
+              Refresh
             </button>
             <button disabled={tickLoading || notifiersLoading} onClick={runSchedulerTick} type="button">
               {tickLoading && <span className="spinner" />}
