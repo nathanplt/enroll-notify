@@ -1,6 +1,7 @@
 "use client";
 
 import { FormEvent, useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 
 type Section = {
   section: string;
@@ -51,6 +52,7 @@ type SchedulerTickResponse = {
 };
 
 export default function DashboardClient() {
+  const router = useRouter();
   const [statusCourse, setStatusCourse] = useState("31");
   const [statusTerm, setStatusTerm] = useState("26S");
   const [statusLoading, setStatusLoading] = useState(false);
@@ -214,6 +216,19 @@ export default function DashboardClient() {
     }
   }
 
+  async function handleLogout() {
+    setBanner(null);
+    try {
+      await fetch("/api/auth/logout", {
+        method: "POST",
+        cache: "no-store",
+      });
+    } finally {
+      router.replace("/login");
+      router.refresh();
+    }
+  }
+
   return (
     <main className="page">
       <div className="header-section">
@@ -224,12 +239,10 @@ export default function DashboardClient() {
               UCLA COM SCI enrollment tracker with instant alerts
             </p>
           </div>
-          <form method="post" action="/api/auth/logout">
-            <button className="secondary" type="submit">
-              Sign Out
-            </button>
-          </form>
-        </div>
+        <button className="secondary" type="button" onClick={handleLogout}>
+          Sign Out
+        </button>
+      </div>
       </div>
 
       {banner ? <div className={`banner ${banner.type === "ok" ? "ok" : "error"}`}>{banner.text}</div> : null}
