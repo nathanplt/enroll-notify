@@ -10,7 +10,7 @@ function isProtectedPage(pathname: string): boolean {
 }
 
 function isProtectedApi(pathname: string): boolean {
-  return pathname.startsWith("/api/backend") || pathname === "/api/auth/logout";
+  return pathname.startsWith("/api/backend");
 }
 
 function hasInvalidStateChangingOrigin(request: NextRequest): boolean {

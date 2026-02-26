@@ -216,62 +216,103 @@ export default function DashboardClient() {
 
   return (
     <main className="page">
-      <div className="row" style={{ justifyContent: "space-between", marginBottom: "0.8rem" }}>
-        <div>
-          <h1>{process.env.NEXT_PUBLIC_APP_NAME || "Enroll Notify"}</h1>
-          <p className="muted">UCLA COM SCI availability checker + email/SMS notifier</p>
+      <div className="header-section">
+        <div className="row" style={{ justifyContent: "space-between", alignItems: "center" }}>
+          <div>
+            <h1>{process.env.NEXT_PUBLIC_APP_NAME || "Enroll Notify"}</h1>
+            <p className="muted" style={{ margin: 0, color: "rgba(255, 255, 255, 0.85)" }}>
+              UCLA COM SCI enrollment tracker with instant alerts
+            </p>
+          </div>
+          <form method="post" action="/api/auth/logout">
+            <button className="secondary" type="submit">
+              Sign Out
+            </button>
+          </form>
         </div>
-        <form method="post" action="/api/auth/logout">
-          <button className="secondary" type="submit">
-            Sign Out
-          </button>
-        </form>
       </div>
 
       {banner ? <div className={`banner ${banner.type === "ok" ? "ok" : "error"}`}>{banner.text}</div> : null}
 
       <section className="grid">
         <article className="card">
-          <h2>1) One-Time Status Check</h2>
+          <h2>Quick Status Check</h2>
+          <p className="muted" style={{ marginBottom: "0.75rem" }}>
+            Check course availability once without creating a notifier
+          </p>
           <form onSubmit={handleCheckStatus}>
-            <label htmlFor="statusCourse">COM SCI Course</label>
-            <input id="statusCourse" value={statusCourse} onChange={(e) => setStatusCourse(e.target.value)} required />
+            <label htmlFor="statusCourse">Course Number</label>
+            <input
+              id="statusCourse"
+              value={statusCourse}
+              onChange={(e) => setStatusCourse(e.target.value)}
+              placeholder="31"
+              required
+            />
 
             <label htmlFor="statusTerm">Term</label>
-            <input id="statusTerm" value={statusTerm} onChange={(e) => setStatusTerm(e.target.value)} required />
+            <input
+              id="statusTerm"
+              value={statusTerm}
+              onChange={(e) => setStatusTerm(e.target.value)}
+              placeholder="26S"
+              required
+            />
 
-            <button style={{ marginTop: "0.8rem" }} disabled={statusLoading} type="submit">
+            <button style={{ marginTop: "1rem", width: "100%" }} disabled={statusLoading} type="submit">
               {statusLoading ? "Checking..." : "Check Status"}
             </button>
           </form>
         </article>
 
         <article className="card">
-          <h2>2) Create Notifier</h2>
+          <h2>Create Alert Notifier</h2>
+          <p className="muted" style={{ marginBottom: "0.75rem" }}>
+            Get notified when a course becomes available
+          </p>
           <form onSubmit={handleCreateNotifier}>
-            <label htmlFor="createCourse">COM SCI Course</label>
-            <input id="createCourse" value={createCourse} onChange={(e) => setCreateCourse(e.target.value)} required />
+            <label htmlFor="createCourse">Course Number</label>
+            <input
+              id="createCourse"
+              value={createCourse}
+              onChange={(e) => setCreateCourse(e.target.value)}
+              placeholder="31"
+              required
+            />
 
             <label htmlFor="createTerm">Term</label>
-            <input id="createTerm" value={createTerm} onChange={(e) => setCreateTerm(e.target.value)} required />
+            <input
+              id="createTerm"
+              value={createTerm}
+              onChange={(e) => setCreateTerm(e.target.value)}
+              placeholder="26S"
+              required
+            />
 
-            <label htmlFor="createPhone">Alert To (email or phone, optional if backend default exists)</label>
+            <label htmlFor="createPhone">Alert Destination</label>
             <input
               id="createPhone"
               value={createPhone}
               onChange={(e) => setCreatePhone(e.target.value)}
-              placeholder="you@gmail.com"
+              placeholder="email@example.com or +15551234567"
             />
+            <p className="muted" style={{ fontSize: "0.8rem", margin: "0.25rem 0 0" }}>
+              Optional if backend has a default configured
+            </p>
 
-            <label htmlFor="createInterval">Interval (seconds)</label>
+            <label htmlFor="createInterval">Check Interval (seconds)</label>
             <input
               id="createInterval"
+              type="number"
+              min="15"
+              max="3600"
               value={createInterval}
               onChange={(e) => setCreateInterval(e.target.value)}
+              placeholder="60"
               required
             />
 
-            <button style={{ marginTop: "0.8rem" }} disabled={createLoading} type="submit">
+            <button style={{ marginTop: "1rem", width: "100%" }} disabled={createLoading} type="submit">
               {createLoading ? "Creating..." : "Create Notifier"}
             </button>
           </form>
@@ -279,33 +320,50 @@ export default function DashboardClient() {
       </section>
 
       {statusResult ? (
-        <section className="card" style={{ marginTop: "1rem" }}>
-          <h2>
-            COM SCI {statusResult.course_number} - {statusResult.course_title}
-          </h2>
-          <p>
-            <span className={`pill ${statusResult.enrollable ? "open" : "closed"}`}>
-              Enrollable: {statusResult.enrollable ? "YES" : "NO"}
-            </span>
-          </p>
+        <section className="card" style={{ marginTop: "1.5rem" }}>
+          <div style={{ marginBottom: "1rem" }}>
+            <h2 style={{ marginBottom: "0.5rem" }}>
+              COM SCI {statusResult.course_number} — {statusResult.course_title}
+            </h2>
+            <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
+              <span className={`pill ${statusResult.enrollable ? "open" : "closed"}`}>
+                {statusResult.enrollable ? "Enrollable" : "Not Available"}
+              </span>
+              <span className="muted" style={{ fontSize: "0.85rem" }}>
+                Checked: {new Date(statusResult.checked_at).toLocaleString()}
+              </span>
+            </div>
+          </div>
           <table>
             <thead>
               <tr>
                 <th>Section</th>
-                <th>Kind</th>
+                <th>Type</th>
                 <th>Status</th>
-                <th>Open</th>
+                <th>Available</th>
                 <th>Enrollable Path</th>
               </tr>
             </thead>
             <tbody>
               {statusResult.sections.map((section) => (
                 <tr key={`${section.kind}-${section.section}`}>
-                  <td>{section.section}</td>
-                  <td>{section.kind}</td>
+                  <td style={{ fontWeight: 600 }}>{section.section}</td>
+                  <td style={{ textTransform: "capitalize" }}>{section.kind}</td>
                   <td>{section.status}</td>
-                  <td>{section.is_open ? "YES" : "NO"}</td>
-                  <td>{section.enrollable_path == null ? "n/a" : section.enrollable_path ? "YES" : "NO"}</td>
+                  <td>
+                    <span style={{ color: section.is_open ? "var(--success)" : "var(--danger)", fontWeight: 600 }}>
+                      {section.is_open ? "Yes" : "No"}
+                    </span>
+                  </td>
+                  <td>
+                    {section.enrollable_path == null ? (
+                      <span className="muted">—</span>
+                    ) : (
+                      <span style={{ color: section.enrollable_path ? "var(--success)" : "var(--danger)", fontWeight: 600 }}>
+                        {section.enrollable_path ? "Yes" : "No"}
+                      </span>
+                    )}
+                  </td>
                 </tr>
               ))}
             </tbody>
@@ -313,83 +371,110 @@ export default function DashboardClient() {
         </section>
       ) : null}
 
-      <section className="card" style={{ marginTop: "1rem" }}>
-        <div className="row" style={{ justifyContent: "space-between", alignItems: "center" }}>
-          <h2>Notifier Jobs</h2>
-          <div className="row">
-            <button className="secondary" disabled={tickLoading} onClick={loadNotifiers} type="button">
-              Refresh
-            </button>
-            <button disabled={tickLoading} onClick={runSchedulerTick} type="button">
-              {tickLoading ? "Running..." : "Run Checks Now"}
-            </button>
+      <section className="card" style={{ marginTop: "1.5rem" }}>
+        <div style={{ marginBottom: "1rem" }}>
+          <div className="row" style={{ justifyContent: "space-between", alignItems: "center", marginBottom: "0.5rem" }}>
+            <h2 style={{ margin: 0 }}>Active Notifiers</h2>
+            <div className="row">
+              <button className="secondary" disabled={tickLoading || notifiersLoading} onClick={loadNotifiers} type="button">
+                Refresh
+              </button>
+              <button disabled={tickLoading || notifiersLoading} onClick={runSchedulerTick} type="button">
+                {tickLoading ? "Running..." : "Run Checks Now"}
+              </button>
+            </div>
           </div>
+          <p className="muted" style={{ margin: 0 }}>
+            {notifiersLoading ? "Refreshing..." : `${sortedNotifiers.length} active ${sortedNotifiers.length === 1 ? "notifier" : "notifiers"}`}
+          </p>
         </div>
-        <p className="muted">{notifiersLoading ? "Refreshing..." : `${sortedNotifiers.length} notifier(s)`}</p>
-        <p className="muted">
-          Local dev: backend auto-runs checks every 60s. Use Run Checks Now for immediate testing.
-        </p>
-        <table>
-          <thead>
-            <tr>
-              <th>Course</th>
-              <th>Term</th>
-              <th>Alert To</th>
-              <th>Interval</th>
-              <th>Active</th>
-              <th>Last Checked</th>
-              <th>Last Enrollable</th>
-              <th>Latest Run</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {sortedNotifiers.length === 0 ? (
+        <div style={{ overflowX: "auto" }}>
+          <table>
+            <thead>
               <tr>
-                <td colSpan={9}>No notifiers yet.</td>
+                <th>Course</th>
+                <th>Term</th>
+                <th>Alert To</th>
+                <th>Interval</th>
+                <th>Status</th>
+                <th>Last Check</th>
+                <th>Enrollable</th>
+                <th>Latest Run</th>
+                <th>Actions</th>
               </tr>
-            ) : (
-              sortedNotifiers.map((notifier) => (
-                <tr key={notifier.id}>
-                  <td>COM SCI {notifier.course_number}</td>
-                  <td>{notifier.term}</td>
-                  <td>{notifier.phone_to}</td>
-                  <td>{notifier.interval_seconds}s</td>
-                  <td>{notifier.active ? "YES" : "NO"}</td>
-                  <td>{notifier.last_checked_at ?? "-"}</td>
-                  <td>
-                    {notifier.last_known_enrollable == null
-                      ? "-"
-                      : notifier.last_known_enrollable
-                        ? "YES"
-                        : "NO"}
-                  </td>
-                  <td>
-                    {notifier.latest_run
-                      ? `${notifier.latest_run.checked_at}${
-                          notifier.latest_run.error_text
-                            ? ` (ERR: ${notifier.latest_run.error_text})`
-                            : notifier.latest_run.sms_sent
-                              ? " (Alert sent)"
-                              : ""
-                        }`
-                      : "-"}
-                  </td>
-                  <td>
-                    <div className="row">
-                      <button className="secondary" onClick={() => toggleNotifier(notifier)} type="button">
-                        {notifier.active ? "Pause" : "Resume"}
-                      </button>
-                      <button className="danger" onClick={() => deleteNotifier(notifier)} type="button">
-                        Delete
-                      </button>
-                    </div>
+            </thead>
+            <tbody>
+              {sortedNotifiers.length === 0 ? (
+                <tr>
+                  <td colSpan={9} style={{ textAlign: "center", padding: "2rem", color: "var(--muted)" }}>
+                    No notifiers created yet. Use the form above to create your first one.
                   </td>
                 </tr>
-              ))
-            )}
-          </tbody>
-        </table>
+              ) : (
+                sortedNotifiers.map((notifier) => (
+                  <tr key={notifier.id}>
+                    <td style={{ fontWeight: 600 }}>COM SCI {notifier.course_number}</td>
+                    <td>{notifier.term}</td>
+                    <td style={{ fontSize: "0.85rem" }}>{notifier.phone_to}</td>
+                    <td>{notifier.interval_seconds}s</td>
+                    <td>
+                      <span className={`status-badge ${notifier.active ? "active" : "inactive"}`}>
+                        {notifier.active ? "Active" : "Paused"}
+                      </span>
+                    </td>
+                    <td style={{ fontSize: "0.85rem" }}>
+                      {notifier.last_checked_at ? new Date(notifier.last_checked_at).toLocaleString() : <span className="muted">—</span>}
+                    </td>
+                    <td>
+                      {notifier.last_known_enrollable == null ? (
+                        <span className="muted">—</span>
+                      ) : (
+                        <span style={{ color: notifier.last_known_enrollable ? "var(--success)" : "var(--danger)", fontWeight: 600 }}>
+                          {notifier.last_known_enrollable ? "Yes" : "No"}
+                        </span>
+                      )}
+                    </td>
+                    <td style={{ fontSize: "0.85rem" }}>
+                      {notifier.latest_run ? (
+                        <div>
+                          {notifier.latest_run.error_text ? (
+                            <span style={{ color: "var(--danger)" }}>Error: {notifier.latest_run.error_text.substring(0, 30)}...</span>
+                          ) : notifier.latest_run.sms_sent ? (
+                            <span style={{ color: "var(--success)", fontWeight: 600 }}>Alert sent</span>
+                          ) : (
+                            <span className="muted">Checked ({notifier.latest_run.duration_ms}ms)</span>
+                          )}
+                        </div>
+                      ) : (
+                        <span className="muted">—</span>
+                      )}
+                    </td>
+                    <td>
+                      <div className="row" style={{ gap: "0.5rem" }}>
+                        <button
+                          className="secondary"
+                          onClick={() => toggleNotifier(notifier)}
+                          type="button"
+                          style={{ fontSize: "0.85rem", padding: "0.4rem 0.75rem" }}
+                        >
+                          {notifier.active ? "Pause" : "Resume"}
+                        </button>
+                        <button
+                          className="danger"
+                          onClick={() => deleteNotifier(notifier)}
+                          type="button"
+                          style={{ fontSize: "0.85rem", padding: "0.4rem 0.75rem" }}
+                        >
+                          Delete
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
       </section>
     </main>
   );

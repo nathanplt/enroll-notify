@@ -1,41 +1,72 @@
 # Enroll Notify
 
-Production-oriented UCLA COM SCI enrollment notifier.
+Automated UCLA COM SCI course enrollment tracker with instant email/SMS alerts.
+
+## Overview
+
+Enroll Notify monitors UCLA Computer Science course availability and sends instant notifications when courses transition from closed to available (open or waitlist).
+
+**Key Features:**
+- Real-time web scraping of UCLA enrollment data
+- Email and SMS alert support
+- Configurable check intervals (15 seconds to 1 hour)
+- Admin dashboard for managing multiple course notifiers
+- Production-ready deployment on Google Cloud Run and Vercel
 
 ## Architecture
 
-- `frontend/`: Next.js App Router UI (deploy on Vercel)
-- `backend/`: FastAPI API + scheduler tick endpoint (deploy on Cloud Run)
-- `Supabase Postgres`: persistent notifier configs and run history
-- `Cloud Scheduler`: calls backend `/internal/scheduler-tick` every minute
-- `Gmail SMTP or Twilio`: alerts when a course transitions from not-enrollable to enrollable
+- **Backend**: FastAPI + Playwright web scraper (Google Cloud Run)
+- **Frontend**: Next.js 14 admin dashboard (Vercel)
+- **Database**: Supabase PostgreSQL
+- **Scheduler**: Google Cloud Scheduler (triggers checks every minute)
+- **Alerts**: Gmail SMTP or Twilio SMS
 
-## Quick Start (Local)
+## Quick Start
 
-## 1) Environment
-
-Copy and fill env vars:
+### 1. Environment Setup
 
 ```bash
 cp .env.example .env
 ```
 
-Fastest alert channel for local testing: Gmail App Password (`GMAIL_SENDER`, `GMAIL_APP_PASSWORD`, `ALERT_TO_EMAIL`).
+Configure required variables in `.env`:
 
-Security requirements:
+**Security:**
+- `BACKEND_API_KEY` - Random 32+ character string
+- `SCHEDULER_TOKEN` - Random 32+ character string
+- `SESSION_SECRET` - Random 32+ character string
 
-- `BACKEND_API_KEY` and `SCHEDULER_TOKEN` should be high-entropy random values (32+ chars).
-- `SESSION_SECRET` must be 32+ chars.
-- Use `ADMIN_PASSWORD_HASH` in production (bcrypt hash). Plain `ADMIN_PASSWORD` is for local dev only.
+**Database:**
+- `SUPABASE_URL` - Supabase project URL
+- `SUPABASE_SERVICE_ROLE_KEY` - Service role key
 
-Generate an admin password hash (recommended):
+**Authentication:**
+- `ADMIN_EMAIL` - Admin login email
+- `ADMIN_PASSWORD_HASH` - Bcrypt hash of admin password
 
+**Alert Channel (choose one):**
+- Gmail: `GMAIL_SENDER`, `GMAIL_APP_PASSWORD`, `ALERT_TO_EMAIL`
+- Twilio: `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, `TWILIO_FROM_NUMBER`
+
+Generate secure tokens:
+```bash
+python3 -c "import secrets; print(secrets.token_urlsafe(32))"
+```
+
+Generate password hash:
 ```bash
 cd frontend
 node -e "console.log(require('bcryptjs').hashSync('your-password', 12))"
 ```
 
-## 2) Backend
+### 2. Database Setup
+
+Execute the migration SQL in Supabase SQL Editor:
+```
+backend/db/migrations/001_init.sql
+```
+
+### 3. Backend
 
 ```bash
 cd backend
@@ -46,23 +77,7 @@ python -m playwright install chromium
 uvicorn app.main:app --reload --port 8000
 ```
 
-Local dev behavior:
-
-- If `ENVIRONMENT=development`, backend runs scheduler ticks automatically every 60s.
-- You can also trigger a tick from the dashboard with `Run Checks Now`.
-
-Run SQL migration once in Supabase SQL editor:
-
-- `backend/db/migrations/001_init.sql`
-
-Smoke test backend APIs:
-
-```bash
-cd backend
-BACKEND_API_KEY=your_api_key_here bash scripts/smoke_notifier_api.sh
-```
-
-## 3) Frontend
+### 4. Frontend
 
 ```bash
 cd frontend
@@ -70,23 +85,72 @@ npm install
 npm run dev
 ```
 
-Open `http://localhost:3000`.
+Access dashboard at `http://localhost:3000`
 
-For the dashboard `Run Checks Now` button, frontend server env must include `SCHEDULER_TOKEN`.
+## API Endpoints
 
-## API Summary
+**Public Routes** (require `X-API-Key` header):
+- `GET /healthz` - Health check
+- `POST /api/v1/check` - Check course status once
+- `GET /api/v1/notifiers` - List notifiers
+- `POST /api/v1/notifiers` - Create notifier
+- `PATCH /api/v1/notifiers/{id}` - Update notifier
+- `DELETE /api/v1/notifiers/{id}` - Delete notifier
 
-- `GET /healthz`
-- `POST /api/v1/check`
-- `GET /api/v1/notifiers`
-- `POST /api/v1/notifiers`
-- `PATCH /api/v1/notifiers/{id}`
-- `DELETE /api/v1/notifiers/{id}`
-- `POST /internal/scheduler-tick` (requires `X-Scheduler-Token`)
+**Internal Routes** (require `X-Scheduler-Token` header):
+- `POST /internal/scheduler-tick` - Trigger scheduler run
 
-All `/api/v1/*` routes require `X-API-Key`.
+## Production Deployment
 
-## Deployment
+### Backend (Cloud Run)
 
-- Backend deployment and scheduler commands: `backend/deploy/cloud_run_scheduler.md`
-- Frontend deploy: connect `frontend/` directory to Vercel project.
+See detailed instructions: [`backend/deploy/cloud_run_scheduler.md`](backend/deploy/cloud_run_scheduler.md)
+
+1. Store secrets in Google Secret Manager
+2. Deploy to Cloud Run
+3. Configure Cloud Scheduler job for `/internal/scheduler-tick`
+
+### Frontend (Vercel)
+
+1. Connect repository to Vercel
+2. Set root directory to `frontend/`
+3. Configure environment variables
+4. Deploy
+
+## How It Works
+
+**Course Detection:**
+- Playwright scrapes UCLA enrollment pages in real-time
+- "Open" and "Waitlist" statuses count as available
+- Only "Closed..." statuses are unavailable
+- Tracks lecture and discussion sections independently
+
+**Alert Logic:**
+- Monitors at configurable intervals (default: 60 seconds)
+- Sends notification on unavailable → available transition
+- Prevents duplicate alerts
+- Stores run history with timestamps and error tracking
+
+**Security:**
+- Bcrypt password hashing
+- JWT session tokens (7-day expiry)
+- Rate limiting (10 login attempts per 15 minutes)
+- CORS restricted to configured origin
+- Security headers (X-Frame-Options, CSP)
+
+## Testing
+
+```bash
+cd backend
+pytest tests/
+```
+
+Test coverage includes:
+- Scraper status detection logic
+- Schema validation
+- Notifier timing calculations
+- Email/phone detection
+
+## License
+
+MIT

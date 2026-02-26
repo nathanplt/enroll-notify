@@ -55,7 +55,11 @@ def normalize_text(text: str) -> str:
 
 
 def status_is_open(status: str) -> bool:
-    return normalize_text(status).lower().startswith("open")
+    normalized = normalize_text(status).lower()
+    if not normalized:
+        return False
+    # Product rule: only explicitly "Closed..." statuses are unavailable.
+    return not normalized.startswith("closed")
 
 
 def normalize_course_inputs(raw_courses: Iterable[str]) -> list[str]:

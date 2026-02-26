@@ -40,15 +40,20 @@ export default function LoginPage() {
   return (
     <main className="auth-shell">
       <section className="card auth-card">
-        <h1>Enroll Notify Login</h1>
-        <p className="muted">Single-admin access to notifier dashboard.</p>
+        <div style={{ textAlign: "center", marginBottom: "1.5rem" }}>
+          <h1 style={{ fontSize: "1.75rem", marginBottom: "0.5rem" }}>Enroll Notify</h1>
+          <p className="muted" style={{ margin: 0 }}>
+            Admin dashboard access
+          </p>
+        </div>
         {error ? <div className="banner error">{error}</div> : null}
         <form onSubmit={onSubmit}>
-          <label htmlFor="email">Email</label>
+          <label htmlFor="email">Email Address</label>
           <input
             id="email"
             type="email"
             autoComplete="email"
+            placeholder="admin@example.com"
             required
             value={email}
             onChange={(event) => setEmail(event.target.value)}
@@ -59,15 +64,19 @@ export default function LoginPage() {
             id="password"
             type="password"
             autoComplete="current-password"
+            placeholder="••••••••"
             required
             value={password}
             onChange={(event) => setPassword(event.target.value)}
           />
 
-          <button style={{ marginTop: "0.9rem", width: "100%" }} disabled={loading} type="submit">
-            {loading ? "Signing In..." : "Sign In"}
+          <button style={{ marginTop: "1.25rem", width: "100%" }} disabled={loading} type="submit">
+            {loading ? "Signing in..." : "Sign In"}
           </button>
         </form>
+        <p className="muted" style={{ marginTop: "1.5rem", textAlign: "center", fontSize: "0.85rem" }}>
+          Single-admin authentication for managing course notifiers
+        </p>
       </section>
     </main>
   );
