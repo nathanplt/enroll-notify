@@ -1,1 +1,1 @@
-"""Enroll Notify backend package."""
+"""BruinWatch backend package."""

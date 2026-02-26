@@ -14,27 +14,27 @@ PY
 
 Create secrets for at least:
 
-- `enroll-notify-backend-api-key`
-- `enroll-notify-scheduler-token`
-- `enroll-notify-supabase-service-role-key`
-- `enroll-notify-gmail-app-password` (or Twilio auth token)
+- `bruinwatch-backend-api-key`
+- `bruinwatch-scheduler-token`
+- `bruinwatch-supabase-service-role-key`
+- `bruinwatch-gmail-app-password` (or Twilio auth token)
 
 Then add versions (example for one secret):
 
 ```bash
-printf '%s' '<secret-value>' | gcloud secrets create enroll-notify-backend-api-key --replication-policy=automatic --data-file=-
+printf '%s' '<secret-value>' | gcloud secrets create bruinwatch-backend-api-key --replication-policy=automatic --data-file=-
 ```
 
 If the secret already exists, add a new version:
 
 ```bash
-printf '%s' '<secret-value>' | gcloud secrets versions add enroll-notify-backend-api-key --data-file=-
+printf '%s' '<secret-value>' | gcloud secrets versions add bruinwatch-backend-api-key --data-file=-
 ```
 
 ## 3) Deploy backend to Cloud Run
 
 ```bash
-gcloud run deploy enroll-notify-api \
+gcloud run deploy bruinwatch-api \
   --source backend \
   --region us-central1 \
   --allow-unauthenticated \
@@ -44,10 +44,10 @@ gcloud run deploy enroll-notify-api \
   --set-env-vars SUPABASE_URL=<supabase-url> \
   --set-env-vars GMAIL_SENDER=<gmail-address> \
   --set-env-vars ALERT_TO_EMAIL=<default-alert-email> \
-  --set-secrets BACKEND_API_KEY=enroll-notify-backend-api-key:latest \
-  --set-secrets SCHEDULER_TOKEN=enroll-notify-scheduler-token:latest \
-  --set-secrets SUPABASE_SERVICE_ROLE_KEY=enroll-notify-supabase-service-role-key:latest \
-  --set-secrets GMAIL_APP_PASSWORD=enroll-notify-gmail-app-password:latest
+  --set-secrets BACKEND_API_KEY=bruinwatch-backend-api-key:latest \
+  --set-secrets SCHEDULER_TOKEN=bruinwatch-scheduler-token:latest \
+  --set-secrets SUPABASE_SERVICE_ROLE_KEY=bruinwatch-supabase-service-role-key:latest \
+  --set-secrets GMAIL_APP_PASSWORD=bruinwatch-gmail-app-password:latest
 ```
 
 If you want SMS instead of email, set Twilio vars (`TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, `TWILIO_FROM_NUMBER`, `ALERT_TO_NUMBER`) instead of Gmail vars.
@@ -57,7 +57,7 @@ If you want SMS instead of email, set Twilio vars (`TWILIO_ACCOUNT_SID`, `TWILIO
 Replace `<cloud-run-url>` with your deployed service URL.
 
 ```bash
-gcloud scheduler jobs create http enroll-notify-tick \
+gcloud scheduler jobs create http bruinwatch-tick \
   --schedule="* * * * *" \
   --uri="<cloud-run-url>/internal/scheduler-tick" \
   --http-method=POST \

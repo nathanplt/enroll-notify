@@ -234,7 +234,7 @@ export default function DashboardClient() {
       <div className="header-section">
         <div className="row" style={{ justifyContent: "space-between", alignItems: "flex-start" }}>
           <div>
-            <h1>{process.env.NEXT_PUBLIC_APP_NAME || "Enroll Notify"}</h1>
+            <h1>{process.env.NEXT_PUBLIC_APP_NAME || "BruinWatch"}</h1>
             <p className="muted">UCLA COM SCI enrollment tracker with instant alerts</p>
           </div>
           <button className="secondary" type="button" onClick={handleLogout}>

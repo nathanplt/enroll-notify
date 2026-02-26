@@ -1,4 +1,4 @@
-# Enroll Notify Frontend (Next.js)
+# BruinWatch Frontend (Next.js)
 
 ## Local run
 

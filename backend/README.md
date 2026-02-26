@@ -1,4 +1,4 @@
-# Enroll Notify Backend (FastAPI)
+# BruinWatch Backend (FastAPI)
 
 ## Local run
 
