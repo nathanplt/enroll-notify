@@ -232,27 +232,27 @@ export default function DashboardClient() {
   return (
     <main className="page">
       <div className="header-section">
-        <div className="row" style={{ justifyContent: "space-between", alignItems: "center" }}>
+        <div className="row" style={{ justifyContent: "space-between", alignItems: "flex-start" }}>
           <div>
             <h1>{process.env.NEXT_PUBLIC_APP_NAME || "Enroll Notify"}</h1>
-            <p className="muted" style={{ margin: 0, color: "rgba(255, 255, 255, 0.85)" }}>
-              UCLA COM SCI enrollment tracker with instant alerts
-            </p>
+            <p className="muted">UCLA COM SCI enrollment tracker with instant alerts</p>
           </div>
-        <button className="secondary" type="button" onClick={handleLogout}>
-          Sign Out
-        </button>
-      </div>
+          <button className="secondary" type="button" onClick={handleLogout}>
+            Sign Out
+          </button>
+        </div>
       </div>
 
       {banner ? <div className={`banner ${banner.type === "ok" ? "ok" : "error"}`}>{banner.text}</div> : null}
 
       <section className="grid">
         <article className="card">
-          <h2>Quick Status Check</h2>
-          <p className="muted" style={{ marginBottom: "0.75rem" }}>
-            Check course availability once without creating a notifier
-          </p>
+          <div style={{ marginBottom: "1.5rem" }}>
+            <h2>Quick Status Check</h2>
+            <p className="muted">
+              Check course availability once without creating a notifier
+            </p>
+          </div>
           <form onSubmit={handleCheckStatus}>
             <label htmlFor="statusCourse">Course Number</label>
             <input
@@ -272,17 +272,19 @@ export default function DashboardClient() {
               required
             />
 
-            <button style={{ marginTop: "1rem", width: "100%" }} disabled={statusLoading} type="submit">
+            <button style={{ width: "100%" }} disabled={statusLoading} type="submit">
               {statusLoading ? "Checking..." : "Check Status"}
             </button>
           </form>
         </article>
 
         <article className="card">
-          <h2>Create Alert Notifier</h2>
-          <p className="muted" style={{ marginBottom: "0.75rem" }}>
-            Get notified when a course becomes available
-          </p>
+          <div style={{ marginBottom: "1.5rem" }}>
+            <h2>Create Alert Notifier</h2>
+            <p className="muted">
+              Get notified when a course becomes available
+            </p>
+          </div>
           <form onSubmit={handleCreateNotifier}>
             <label htmlFor="createCourse">Course Number</label>
             <input
@@ -302,16 +304,18 @@ export default function DashboardClient() {
               required
             />
 
-            <label htmlFor="createPhone">Alert Destination</label>
+            <label htmlFor="createPhone">
+              Alert Destination
+              <span className="muted" style={{ fontWeight: 400, fontSize: "0.8125rem", marginLeft: "0.5rem" }}>
+                (Optional)
+              </span>
+            </label>
             <input
               id="createPhone"
               value={createPhone}
               onChange={(e) => setCreatePhone(e.target.value)}
               placeholder="email@example.com or +15551234567"
             />
-            <p className="muted" style={{ fontSize: "0.8rem", margin: "0.25rem 0 0" }}>
-              Optional if backend has a default configured
-            </p>
 
             <label htmlFor="createInterval">Check Interval (seconds)</label>
             <input
@@ -325,7 +329,7 @@ export default function DashboardClient() {
               required
             />
 
-            <button style={{ marginTop: "1rem", width: "100%" }} disabled={createLoading} type="submit">
+            <button style={{ width: "100%" }} disabled={createLoading} type="submit">
               {createLoading ? "Creating..." : "Create Notifier"}
             </button>
           </form>
@@ -333,17 +337,23 @@ export default function DashboardClient() {
       </section>
 
       {statusResult ? (
-        <section className="card" style={{ marginTop: "1.5rem" }}>
-          <div style={{ marginBottom: "1rem" }}>
-            <h2 style={{ marginBottom: "0.5rem" }}>
-              COM SCI {statusResult.course_number} — {statusResult.course_title}
-            </h2>
-            <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
+        <section className="card" style={{ marginTop: "2rem" }}>
+          <div className="section-header">
+            <div>
+              <h3 style={{ margin: 0, textTransform: "none", fontSize: "0.875rem" }}>Course Details</h3>
+              <h2 style={{ margin: "0.25rem 0 0", fontSize: "1.5rem", fontWeight: 700 }}>
+                COM SCI {statusResult.course_number}
+              </h2>
+              <p className="muted" style={{ margin: "0.25rem 0 0", fontSize: "0.9375rem" }}>
+                {statusResult.course_title}
+              </p>
+            </div>
+            <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: "0.5rem" }}>
               <span className={`pill ${statusResult.enrollable ? "open" : "closed"}`}>
                 {statusResult.enrollable ? "Enrollable" : "Not Available"}
               </span>
-              <span className="muted" style={{ fontSize: "0.85rem" }}>
-                Checked: {new Date(statusResult.checked_at).toLocaleString()}
+              <span className="muted" style={{ fontSize: "0.8125rem" }}>
+                {new Date(statusResult.checked_at).toLocaleString()}
               </span>
             </div>
           </div>
@@ -364,7 +374,7 @@ export default function DashboardClient() {
                   <td style={{ textTransform: "capitalize" }}>{section.kind}</td>
                   <td>{section.status}</td>
                   <td>
-                    <span style={{ color: section.is_open ? "var(--success)" : "var(--danger)", fontWeight: 600 }}>
+                    <span style={{ color: section.is_open ? "var(--success)" : "var(--accent)", fontWeight: 500 }}>
                       {section.is_open ? "Yes" : "No"}
                     </span>
                   </td>
@@ -372,7 +382,7 @@ export default function DashboardClient() {
                     {section.enrollable_path == null ? (
                       <span className="muted">—</span>
                     ) : (
-                      <span style={{ color: section.enrollable_path ? "var(--success)" : "var(--danger)", fontWeight: 600 }}>
+                      <span style={{ color: section.enrollable_path ? "var(--success)" : "var(--accent)", fontWeight: 500 }}>
                         {section.enrollable_path ? "Yes" : "No"}
                       </span>
                     )}
@@ -384,22 +394,23 @@ export default function DashboardClient() {
         </section>
       ) : null}
 
-      <section className="card" style={{ marginTop: "1.5rem" }}>
-        <div style={{ marginBottom: "1rem" }}>
-          <div className="row" style={{ justifyContent: "space-between", alignItems: "center", marginBottom: "0.5rem" }}>
-            <h2 style={{ margin: 0 }}>Active Notifiers</h2>
-            <div className="row">
-              <button className="secondary" disabled={tickLoading || notifiersLoading} onClick={loadNotifiers} type="button">
-                Refresh
-              </button>
-              <button disabled={tickLoading || notifiersLoading} onClick={runSchedulerTick} type="button">
-                {tickLoading ? "Running..." : "Run Checks Now"}
-              </button>
-            </div>
+      <section className="card" style={{ marginTop: "2rem" }}>
+        <div className="section-header">
+          <div>
+            <h3 style={{ margin: 0, textTransform: "none", fontSize: "0.875rem" }}>Monitoring</h3>
+            <h2 style={{ margin: "0.25rem 0 0", fontSize: "1.5rem", fontWeight: 700 }}>Active Notifiers</h2>
+            <p className="muted" style={{ margin: "0.25rem 0 0" }}>
+              {notifiersLoading ? "Refreshing..." : `${sortedNotifiers.length} ${sortedNotifiers.length === 1 ? "notifier" : "notifiers"}`}
+            </p>
           </div>
-          <p className="muted" style={{ margin: 0 }}>
-            {notifiersLoading ? "Refreshing..." : `${sortedNotifiers.length} active ${sortedNotifiers.length === 1 ? "notifier" : "notifiers"}`}
-          </p>
+          <div className="row">
+            <button className="secondary" disabled={tickLoading || notifiersLoading} onClick={loadNotifiers} type="button">
+              Refresh
+            </button>
+            <button disabled={tickLoading || notifiersLoading} onClick={runSchedulerTick} type="button">
+              {tickLoading ? "Running..." : "Run Checks Now"}
+            </button>
+          </div>
         </div>
         <div style={{ overflowX: "auto" }}>
           <table>
@@ -442,18 +453,18 @@ export default function DashboardClient() {
                       {notifier.last_known_enrollable == null ? (
                         <span className="muted">—</span>
                       ) : (
-                        <span style={{ color: notifier.last_known_enrollable ? "var(--success)" : "var(--danger)", fontWeight: 600 }}>
+                        <span style={{ color: notifier.last_known_enrollable ? "var(--success)" : "var(--accent)", fontWeight: 500 }}>
                           {notifier.last_known_enrollable ? "Yes" : "No"}
                         </span>
                       )}
                     </td>
-                    <td style={{ fontSize: "0.85rem" }}>
+                    <td style={{ fontSize: "0.8125rem" }}>
                       {notifier.latest_run ? (
                         <div>
                           {notifier.latest_run.error_text ? (
-                            <span style={{ color: "var(--danger)" }}>Error: {notifier.latest_run.error_text.substring(0, 30)}...</span>
+                            <span style={{ color: "var(--accent)", fontWeight: 500 }}>Error: {notifier.latest_run.error_text.substring(0, 30)}...</span>
                           ) : notifier.latest_run.sms_sent ? (
-                            <span style={{ color: "var(--success)", fontWeight: 600 }}>Alert sent</span>
+                            <span style={{ color: "var(--success)", fontWeight: 500 }}>Alert sent</span>
                           ) : (
                             <span className="muted">Checked ({notifier.latest_run.duration_ms}ms)</span>
                           )}
@@ -468,7 +479,7 @@ export default function DashboardClient() {
                           className="secondary"
                           onClick={() => toggleNotifier(notifier)}
                           type="button"
-                          style={{ fontSize: "0.85rem", padding: "0.4rem 0.75rem" }}
+                          style={{ fontSize: "0.8125rem", padding: "0.375rem 0.875rem" }}
                         >
                           {notifier.active ? "Pause" : "Resume"}
                         </button>
@@ -476,7 +487,7 @@ export default function DashboardClient() {
                           className="danger"
                           onClick={() => deleteNotifier(notifier)}
                           type="button"
-                          style={{ fontSize: "0.85rem", padding: "0.4rem 0.75rem" }}
+                          style={{ fontSize: "0.8125rem", padding: "0.375rem 0.875rem" }}
                         >
                           Delete
                         </button>

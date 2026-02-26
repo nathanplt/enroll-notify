@@ -39,12 +39,10 @@ export default function LoginPage() {
 
   return (
     <main className="auth-shell">
-      <section className="card auth-card">
-        <div style={{ textAlign: "center", marginBottom: "1.5rem" }}>
-          <h1 style={{ fontSize: "1.75rem", marginBottom: "0.5rem" }}>Enroll Notify</h1>
-          <p className="muted" style={{ margin: 0 }}>
-            Admin dashboard access
-          </p>
+      <section className="auth-card">
+        <div style={{ marginBottom: "2rem" }}>
+          <h1>Enroll Notify</h1>
+          <p className="muted">Admin dashboard access</p>
         </div>
         {error ? <div className="banner error">{error}</div> : null}
         <form onSubmit={onSubmit}>
@@ -64,17 +62,18 @@ export default function LoginPage() {
             id="password"
             type="password"
             autoComplete="current-password"
-            placeholder="••••••••"
+            placeholder="Enter your password"
             required
             value={password}
             onChange={(event) => setPassword(event.target.value)}
           />
 
-          <button style={{ marginTop: "1.25rem", width: "100%" }} disabled={loading} type="submit">
+          <button style={{ width: "100%" }} disabled={loading} type="submit">
             {loading ? "Signing in..." : "Sign In"}
           </button>
         </form>
-        <p className="muted" style={{ marginTop: "1.5rem", textAlign: "center", fontSize: "0.85rem" }}>
+        <div className="divider" />
+        <p className="muted" style={{ textAlign: "center", fontSize: "0.8125rem" }}>
           Single-admin authentication for managing course notifiers
         </p>
       </section>
