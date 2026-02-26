@@ -87,69 +87,12 @@ npm run dev
 
 Access dashboard at `http://localhost:3000`
 
-## API Endpoints
-
-**Public Routes** (require `X-API-Key` header):
-- `GET /healthz` - Health check
-- `POST /api/v1/check` - Check course status once
-- `GET /api/v1/notifiers` - List notifiers
-- `POST /api/v1/notifiers` - Create notifier
-- `PATCH /api/v1/notifiers/{id}` - Update notifier
-- `DELETE /api/v1/notifiers/{id}` - Delete notifier
-
-**Internal Routes** (require `X-Scheduler-Token` header):
-- `POST /internal/scheduler-tick` - Trigger scheduler run
-
-## Production Deployment
-
-### Backend (Cloud Run)
-
-See detailed instructions: [`backend/deploy/cloud_run_scheduler.md`](backend/deploy/cloud_run_scheduler.md)
-
-1. Store secrets in Google Secret Manager
-2. Deploy to Cloud Run
-3. Configure Cloud Scheduler job for `/internal/scheduler-tick`
-
-### Frontend (Vercel)
-
-1. Connect repository to Vercel
-2. Set root directory to `frontend/`
-3. Configure environment variables
-4. Deploy
-
-## How It Works
-
-**Course Detection:**
-- Playwright scrapes UCLA enrollment pages in real-time
-- "Open" and "Waitlist" statuses count as available
-- Only "Closed..." statuses are unavailable
-- Tracks lecture and discussion sections independently
-
-**Alert Logic:**
-- Monitors at configurable intervals (default: 60 seconds)
-- Sends notification on unavailable → available transition
-- Prevents duplicate alerts
-- Stores run history with timestamps and error tracking
-
-**Security:**
-- Bcrypt password hashing
-- JWT session tokens (7-day expiry)
-- Rate limiting (10 login attempts per 15 minutes)
-- CORS restricted to configured origin
-- Security headers (X-Frame-Options, CSP)
-
 ## Testing
 
 ```bash
 cd backend
 pytest tests/
 ```
-
-Test coverage includes:
-- Scraper status detection logic
-- Schema validation
-- Notifier timing calculations
-- Email/phone detection
 
 ## License
 
